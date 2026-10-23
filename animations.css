@@ -1,0 +1,66 @@
+/*
+  Animaciones — Dra. Melissa Mendiola.
+  Todo cuelga de `html.anim`, clase que añade animations.js solo cuando el JS cargó,
+  no hay prefers-reduced-motion y la URL no trae ?captura=1. Sin esa clase este
+  archivo no hace nada y el sitio se ve idéntico al original.
+  Solo opacity / translate / scale (no mueven el layout). Duraciones 300–800 ms.
+*/
+
+/* --- Entrada: fade + subida -------------------------------------------------
+   Se usan @keyframes (no transiciones) porque varias tarjetas y botones ya traen
+   `transition-*` de Tailwind que pisarían una transición. Con fill-mode `backwards`
+   el elemento vuelve a sus valores originales al terminar. */
+@keyframes ad-rise { from { opacity: 0; translate: 0 20px; } }
+@keyframes ad-star { from { opacity: 0; scale: .55; } }
+@keyframes ad-ring { 0% { opacity: .32; scale: 1; } 100% { opacity: 0; scale: 1.55; } }
+
+html.anim { scroll-behavior: smooth; }
+
+html.anim [data-anim] {
+  animation-name: ad-rise;
+  animation-duration: .7s;
+  animation-timing-function: cubic-bezier(.22, .61, .36, 1);
+  animation-delay: var(--ad, 0s);
+  animation-fill-mode: backwards;
+  animation-play-state: paused;          /* oculto (1.er fotograma) hasta que JS lo active */
+}
+html.anim [data-anim="hero"] { animation-duration: .8s; }
+html.anim [data-anim="star"] { animation-name: ad-star; animation-duration: .3s; animation-timing-function: ease-out; }
+html.anim [data-anim].is-in { animation-play-state: running; }
+html.anim [data-anim].is-instant { animation-duration: 0s; animation-delay: 0s; }
+
+/* --- Hover (solo escritorio con puntero) ------------------------------------ */
+@media (hover: hover) and (min-width: 1024px) {
+  html.anim [data-hover] {
+    transition-property: translate, scale, box-shadow, background-color, border-color, color, filter;
+    transition-duration: .3s;
+    transition-timing-function: ease;
+  }
+  html.anim [data-hover="btn"]:hover   { translate: 0 -1px; box-shadow: 0 8px 20px -8px rgba(31, 95, 107, .38); }
+  html.anim [data-hover="card"]:hover  { translate: 0 -3px; box-shadow: 0 14px 30px -10px rgba(31, 95, 107, .18); }
+  html.anim [data-hover="frame"]:hover { translate: 0 -4px; box-shadow: 0 22px 44px -14px rgba(31, 95, 107, .28); }
+  html.anim [data-hover="zoom"]:hover  { scale: 1.03; }
+}
+
+/* --- Móvil: pulso suave y lento del botón fijo de WhatsApp (3 ciclos y se detiene) */
+html.anim #v-mobile aside a { position: relative; }
+html.anim #v-mobile aside a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 9999px;
+  background: #25D366;
+  opacity: 0;
+  pointer-events: none;
+  animation: ad-ring 2.8s ease-out 2s 3 backwards;
+}
+
+/* --- Accesibilidad / modo captura -------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html, html.scroll-smooth { scroll-behavior: auto !important; }
+  html.anim *, html.anim *::before, html.anim *::after { animation: none !important; transition: none !important; }
+}
+html.captura, html.captura.scroll-smooth { scroll-behavior: auto !important; }
+/* ?captura=1: nada se mueve (incluye el animate-ping que ya traía el botón flotante de escritorio) */
+html.captura *, html.captura *::before, html.captura *::after { animation: none !important; transition: none !important; }
